@@ -1,0 +1,795 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vietlott 5/35 — Thống kê & Phân tích</title>
+<style>
+:root{--bg:#061426;--panel:#0a1c32;--panel2:#0d2440;--line:#173c63;--blue:#2f9cff;--cyan:#42d7f5;--text:#e8f2ff;--muted:#91aac9;--pink:#ff426f;--green:#20d6a1;--gold:#ffbd4a;--special:#ff7b54}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#10294a 0,#061426 48%,#030b16 100%);color:var(--text);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+button,input,textarea,select{font:inherit}button{cursor:pointer;border:1px solid #24517d;border-radius:9px;padding:10px 14px;background:#123762;color:white}button:hover{background:#18508b}button:disabled{opacity:.55;cursor:not-allowed}
+.app{display:grid;grid-template-columns:235px 1fr;min-height:100vh}
+.sidebar{padding:22px 15px;border-right:1px solid var(--line);background:#041020;display:flex;flex-direction:column;gap:9px}
+.brand{display:flex;gap:10px;align-items:center;margin:0 0 22px}
+.logo{width:42px;height:42px;border-radius:50%;background:conic-gradient(var(--pink),#f89a48,var(--blue),var(--pink));display:grid;place-items:center;font-size:22px;font-weight:900;color:white}
+.brand h1{font-size:17px;margin:0}.brand small{display:block;color:var(--muted);font-size:11px}
+.nav{width:100%;text-align:left;background:transparent;border-color:transparent;color:#b6cbe5}
+.nav.active,.nav:hover{background:#123b70;border-color:#1f5d9c;color:white}
+.side-note{margin-top:auto;border:1px solid var(--line);padding:13px;border-radius:10px;color:var(--muted);font-size:12px}
+.main{min-width:0}
+.topbar{padding:16px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:#07172ad9}
+.topbar strong{font-size:17px}.topbar small{color:var(--muted)}
+.content{padding:18px;max-width:1600px;margin:auto}
+.grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(280px,1fr);gap:14px}
+.left,.right{display:flex;flex-direction:column;gap:14px;min-width:0}
+.card{background:linear-gradient(145deg,#0a1c32,#07182b);border:1px solid var(--line);border-radius:12px;padding:15px;min-width:0;box-shadow:0 8px 24px #0002}
+.card h2,.card h3{margin:0 0 12px;font-size:16px}
+.muted{color:var(--muted)}.small{font-size:12px}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.row.space{justify-content:space-between}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#123762;border:1px solid #2a5f96;font-size:12px;font-weight:600}
+.pill.warn{background:#3a1f0f;border-color:#8a4b1a;color:#ffbd4a}
+.pill.ok{background:#0f2e22;border-color:#1a6b4a;color:var(--green)}
+.analytics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}.analytics-grid .stats{grid-column:1/-1}.balls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ball{width:43px;height:43px;border-radius:50%;display:inline-grid;place-items:center;color:#fff;font-weight:800;font-size:16px;background:linear-gradient(145deg,#ff6d86,#cf164b);box-shadow:inset 0 2px 4px #fff5,0 5px 12px #0004}
+.ball.blue{background:linear-gradient(145deg,#43b7ff,#0962df)}
+.ball.green{background:linear-gradient(145deg,#42e7b9,#009d75)}
+.ball.purple{background:linear-gradient(145deg,#ce88ff,#7135b6)}
+.ball.gold{background:linear-gradient(145deg,#ffd36c,#df8516)}
+.ball.special{background:linear-gradient(145deg,#ff9a5a,#d4551a);box-shadow:inset 0 2px 4px #fff4,0 5px 12px #0004}
+.ball.sm{width:32px;height:32px;font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.stat{background:#0b2340;border:1px solid #183e67;border-radius:9px;padding:12px;text-align:center}
+.stat span{display:block;color:var(--muted);font-size:12px}.stat b{display:block;font-size:25px;color:#b9dcff;margin:4px 0}.stat small{color:var(--muted);font-size:11px}
+.freq-list{display:grid;gap:7px}
+.freq-row{display:grid;grid-template-columns:27px 1fr 28px;gap:8px;align-items:center;font-size:12px}
+.mini-ball{height:25px;width:25px;border-radius:50%;display:grid;place-items:center;background:#123b70;color:#d6eaff;font-weight:700;font-size:11px}
+.bar{height:9px;background:#132b47;border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#0878e9,#4bd3ff);border-radius:99px}
+.table-wrap{overflow:auto;max-height:520px}
+table{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap}
+th,td{padding:9px 10px;text-align:left;border-bottom:1px solid #17314e}
+th{color:#a8c7eb;font-weight:600;position:sticky;top:0;background:#0b2038}
+td.nums{letter-spacing:4px;color:#cde5ff}
+.chart{width:100%;height:220px;display:block}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.panel{display:none}.panel.active{display:block}
+.warning{margin-top:10px;padding:11px;border:1px solid #66502a;background:#302514;border-radius:9px;color:#f4d59b;font-size:12px}
+.heatmap{display:grid;grid-template-columns:repeat(7,minmax(30px,1fr));gap:5px}
+.heat{border:1px solid #24496d;border-radius:7px;min-height:40px;display:grid;place-items:center;font-weight:700;font-size:12px}
+.suggestion{padding:10px 0;border-bottom:1px solid #193552}
+.suggestion:last-child{border:0}
+.suggestion .ball{width:32px;height:32px;font-size:12px}
+.suggestion .balls{gap:5px}
+textarea{width:100%;min-height:120px;background:#061426;border:1px solid #24476a;border-radius:8px;color:var(--text);padding:10px;resize:vertical}
+.footer{font-size:11px;color:#7894b7;text-align:center;padding:18px}
+@media(max-width:900px){
+  .app{grid-template-columns:1fr}
+  .sidebar{position:static;border-right:0;border-bottom:1px solid var(--line);padding:12px;display:flex;flex-direction:row;flex-wrap:wrap;align-items:center}
+  .brand{width:100%;margin:0}.nav{width:auto;flex:1 1 130px}.side-note{display:none}
+  .grid{grid-template-columns:1fr}.split{grid-template-columns:1fr}.content{padding:11px}
+  .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:420px){.ball{width:36px;height:36px;font-size:14px}.stats{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand"><div class="logo">✦</div><div><h1>Vietlott 5/35</h1><small>Thống kê · Xu hướng · Tham khảo</small></div></div>
+  <button class="nav active" data-page="overview">▦　Tổng quan</button>
+  <button class="nav" data-page="history">▤　Dữ liệu 100 kỳ</button>
+  <button class="nav" data-page="trends">⌁　Phân tích xu hướng</button>
+  <button class="nav" data-page="predict">✧　Gợi ý dãy số</button>
+<button class="nav" data-page="analytics">⌘　Phân tích & ML</button>
+  <button class="nav" data-page="import">⇧　Nhập dữ liệu</button>
+  <div class="side-note"><b>Vietlott Lotto 5/35</b><p>Phân tích tần suất, khoảng số và lịch sử dựa trên dữ liệu thật từ nguồn mở. Không có cách dự đoán chắc chắn kết quả ngẫu nhiên.</p></div>
+</aside>
+<main class="main">
+  <div class="topbar">
+    <div><strong id="pageTitle">Tổng quan thống kê</strong>　<span class="pill" id="dataBadge">ĐANG TẢI…</span></div>
+    <div class="row">
+      <small id="drawCount">Đang tải dữ liệu…</small>
+      <button id="syncBtn" onclick="syncRealData()">⟳ Cập nhật kết quả thật</button>
+    </div>
+  </div>
+  <div class="content">
+
+    <!-- OVERVIEW -->
+    <section class="panel active" id="overview">
+      <div class="grid">
+        <div class="left">
+          <div class="card">
+            <div class="row space">
+              <div>
+                <h2>Kỳ quay gần nhất</h2>
+                <div class="muted small" id="latestMeta">Đang tải…</div>
+              </div>
+              <span class="pill">5 số / 35 + ĐB</span>
+            </div>
+            <div class="balls" id="latestBalls" style="margin-top:14px"></div>
+          </div>
+          <div class="card">
+            <h2>Tần suất xuất hiện của 35 số</h2>
+            <canvas class="chart" id="freqChart"></canvas>
+            <div class="muted small">Tần suất trong 100 kỳ gần nhất; không phải xác suất kỳ tiếp theo.</div>
+          </div>
+          <div class="split">
+            <div class="card"><h3>🔥 Số xuất hiện nhiều</h3><div id="hotList" class="freq-list"></div></div>
+            <div class="card"><h3>❄️ Số lâu chưa xuất hiện</h3><div id="coldList" class="freq-list"></div></div>
+          </div>
+          <div class="card">
+            <h2>Phân bố theo khoảng số</h2>
+            <canvas class="chart" id="rangeChart" style="height:190px"></canvas>
+          </div>
+          <div class="card">
+            <h2>Lịch sử kết quả gần đây</h2>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Kỳ</th><th>Ngày</th><th>5 số chính</th><th>Đặc biệt</th></tr></thead>
+                <tbody id="recentRows"></tbody>
+              </table>
+            </div>
+            <button style="margin-top:12px" onclick="go('history')">Xem toàn bộ dữ liệu →</button>
+          </div>
+        </div>
+        <div class="right">
+          <div class="card">
+            <h2>Tóm tắt dữ liệu</h2>
+            <div class="stats">
+              <div class="stat"><span>Số kỳ</span><b id="totalDraws">—</b><small>kỳ đã nạp</small></div>
+              <div class="stat"><span>Số khác nhau</span><b id="uniqueNums">—</b><small>trên 35 số</small></div>
+              <div class="stat"><span>Tổng lượt</span><b id="totalHits">—</b><small>xuất hiện</small></div>
+            </div>
+            <p class="muted small" id="dataStatus" style="margin-top:10px"></p>
+          </div>
+          <div class="card prediction">
+            <h2>✧ Gợi ý dãy số tham khảo</h2>
+            <p class="muted small">Chọn theo cân bằng tần suất và phân bố khoảng số. Không phải dự đoán có lợi thế toán học.</p>
+            <div id="suggestions"></div>
+            <button style="width:100%;margin-top:10px" onclick="go('predict')">Xem phân tích gợi ý →</button>
+          </div>
+          <div class="card">
+            <h2>📊 Chẵn / lẻ</h2>
+            <canvas class="chart" id="oddChart" style="height:160px"></canvas>
+            <div class="muted small" id="oddText"></div>
+          </div>
+          <div class="card">
+            <h2>🎯 Số đặc biệt (1–12)</h2>
+            <div id="specialFreq" class="freq-list"></div>
+          </div>
+          <div class="card">
+            <h2>🧭 Cách đọc thống kê</h2>
+            <p class="small muted">“Nóng” nghĩa là xuất hiện nhiều trong dữ liệu đã xem; “lạnh” nghĩa là ít xuất hiện hoặc lâu chưa về. Các mô tả này chỉ tóm tắt quá khứ.</p>
+            <div class="warning">Mọi tổ hợp 5 số khác nhau trong 1–35 có xác suất như nhau trong một kỳ quay công bằng. Kết quả cũ không đảm bảo số sẽ lặp lại.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HISTORY -->
+    <section class="panel" id="history">
+      <div class="card">
+        <div class="row space">
+          <div>
+            <h2>Lịch sử 100 kỳ</h2>
+            <p class="muted small">Dữ liệu đã xác minh từ nguồn mở vietvudanh/vietlott-data.</p>
+          </div>
+          <button onclick="downloadCSV()">Xuất CSV</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Kỳ</th><th>Ngày</th><th>5 số chính</th><th>Đặc biệt</th><th>Tổng</th><th>Chẵn</th><th>Lẻ</th></tr></thead>
+            <tbody id="allRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRENDS -->
+    <section class="panel" id="trends">
+      <div class="grid">
+        <div class="left">
+          <div class="card">
+            <h2>Tần suất từng số</h2>
+            <canvas class="chart" id="trendFreq" style="height:280px"></canvas>
+          </div>
+          <div class="card">
+            <h2>Khoảng cách từ lần xuất hiện gần nhất</h2>
+            <div class="heatmap" id="gapMap"></div>
+          </div>
+        </div>
+        <div class="right">
+          <div class="card">
+            <h2>Phân bố theo nhóm</h2>
+            <canvas class="chart" id="trendRange" style="height:230px"></canvas>
+            <div id="rangeSummary" class="small muted"></div>
+          </div>
+          <div class="card">
+            <h2>Tần suất số đặc biệt</h2>
+            <canvas class="chart" id="specialChart" style="height:200px"></canvas>
+          </div>
+          <div class="card">
+            <h2>Tổng 5 số mỗi kỳ (30 kỳ gần nhất)</h2>
+            <canvas class="chart" id="sumChart" style="height:200px"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PREDICT -->
+    <section class="panel" id="predict">
+      <div class="card">
+        <h2>✧ Gợi ý tổ hợp (thuật toán tối ưu)</h2>
+        <p class="muted small">Hệ thống chấm điểm đa yếu tố: tần suất, khoảng cách (overdue), cặp số thường đi cùng, cân bằng chẵn/lẻ, phân bố khoảng, tổng số. <b>Điểm số chỉ phản ánh mức “phù hợp thống kê quá khứ”</b> — không phải xác suất trúng kỳ tiếp theo.</p>
+        <div id="predictList"></div>
+        <div class="row" style="margin-top:14px;gap:8px">
+          <button onclick="makeSuggestions()">⟳ Tạo lại gợi ý</button>
+          <button onclick="makeSuggestions(true)">Tạo thêm 5 dãy</button>
+        </div>
+        <div class="warning" style="margin-top:16px">
+          <b>Quan trọng:</b> Không có thuật toán nào đạt độ chính xác cao (kể cả 80%) cho xổ số công bằng.
+          Xác suất mỗi tổ hợp 5 số là như nhau (~1/324.632). Điểm số bên dưới chỉ giúp bạn chọn dãy “trông hợp lý” theo dữ liệu quá khứ, không làm tăng cơ hội trúng.
+        </div>
+      </div>
+      <div class="card" style="margin-top:14px">
+        <h2>Cách thuật toán chấm điểm</h2>
+        <ul class="muted small" style="margin:0;padding-left:18px;line-height:1.7">
+          <li><b>Tần suất (25%)</b> — ưu tiên số xuất hiện gần mức trung bình hoặc hơi cao trong 100 kỳ.</li>
+          <li><b>Overdue / khoảng cách (25%)</b> — số lâu chưa về được cộng điểm (không quá cực đoan).</li>
+          <li><b>Cặp số đồng hành (20%)</b> — ưu tiên các cặp từng xuất hiện cùng nhau nhiều lần.</li>
+          <li><b>Cân bằng chẵn/lẻ & khoảng (15%)</b> — tránh dãy toàn lẻ hoặc dồn 1 khoảng số.</li>
+          <li><b>Tổng & độ lệch (15%)</b> — tổng 5 số gần mức trung bình lịch sử.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- IMPORT -->
+    <section class="panel" id="analytics">
+  <div class="section-head"><div><h2>Analytics nâng cao & Machine Learning</h2><p class="muted">Phân tích mô tả và backtest theo thời gian; không phải dự đoán chắc chắn.</p></div></div>
+  <div class="card" style="margin-bottom:16px"><h3>Phân tích tần suất, cặp số và khoảng cách</h3><button onclick="loadAdvancedAnalytics()">Tải phân tích</button><div id="analyticsOutput" class="analytics-grid" style="margin-top:14px"></div></div>
+  <div class="card" style="margin-bottom:16px"><h3>Gợi ý dãy số từ mô hình ML</h3><p class="muted">Điểm mô hình chỉ mang tính tham khảo, không phải xác suất trúng.</p><button onclick="loadMLRecommendation()">Tạo gợi ý ML</button><div id="mlOutput" style="margin-top:14px"></div></div>
+  <div class="card"><h3>Walk-forward backtest</h3><p class="muted">Mỗi kỳ kiểm tra chỉ dùng các kỳ trước đó. So sánh số lượng số trùng với baseline tần suất và kỳ vọng ngẫu nhiên.</p><button onclick="runBacktest()">Chạy backtest nhanh</button><div id="backtestOutput" style="margin-top:14px"></div></div>
+  <p class="muted">Lưu ý: kết quả backtest trên dữ liệu ít có nhiễu lớn; không chứng minh khả năng tăng xác suất trúng trong tương lai.</p>
+</section>
+<section class="panel" id="import">
+      <div class="card">
+        <h2>Nhập dữ liệu CSV (dự phòng)</h2>
+        <p class="muted small">Nếu nguồn tự động không hoạt động, bạn có thể dán hoặc tải file CSV theo định dạng: <code>ky,ngay,so1,so2,so3,so4,so5,special</code></p>
+        <textarea id="csvInput" placeholder="00946,2026-10-14,9,10,18,28,35,7&#10;00945,2026-10-14,2,10,11,19,22,6"></textarea>
+        <div class="row" style="margin-top:10px">
+          <button onclick="importCSV()">Nạp dữ liệu</button>
+          <button onclick="downloadTemplate()">Tải mẫu CSV</button>
+          <label style="cursor:pointer"><input type="file" accept=".csv,text/csv" onchange="loadFile(event)" hidden>Chọn file…</label>
+        </div>
+        <p id="importMsg" class="muted small" style="margin-top:8px"></p>
+      </div>
+    </section>
+
+    <div class="footer">Vietlott 5/35 • Công cụ thống kê tham khảo • Không đảm bảo kết quả hoặc lợi nhuận</div>
+  </div>
+</main>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let draws = [];
+let sampleMode = true;
+
+function sampleData() {
+  const out = [];
+  let id = 900;
+  for (let i = 0; i < 100; i++) {
+    const nums = new Set();
+    while (nums.size < 5) nums.add(1 + Math.floor(Math.random() * 35));
+    out.push({
+      id: String(id--),
+      date: `2026-0${1 + (i % 9)}-${10 + (i % 18)}`,
+      nums: [...nums].sort((a, b) => a - b),
+      special: 1 + Math.floor(Math.random() * 12)
+    });
+  }
+  return out;
+}
+
+document.querySelectorAll('.nav').forEach(btn => {
+  btn.addEventListener('click', () => go(btn.dataset.page));
+});
+function go(page) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav').forEach(n => n.classList.remove('active'));
+  $(page).classList.add('active');
+  document.querySelector(`.nav[data-page="${page}"]`).classList.add('active');
+  const titles = { overview: 'Tổng quan thống kê', history: 'Dữ liệu 100 kỳ', trends: 'Phân tích xu hướng', predict: 'Gợi ý dãy số', import: 'Nhập dữ liệu', analytics: 'Phân tích nâng cao & ML' };
+  $('pageTitle').textContent = titles[page] || page;
+  setTimeout(render, 30);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function freqMap() {
+  const f = Array(36).fill(0);
+  draws.forEach(d => d.nums.forEach(n => f[n]++));
+  return f;
+}
+function specialFreqMap() {
+  const f = Array(13).fill(0);
+  draws.forEach(d => { if (d.special >= 1 && d.special <= 12) f[d.special]++; });
+  return f;
+}
+function lastSeen() {
+  const seen = Array(36).fill(999);
+  draws.forEach((d, idx) => d.nums.forEach(n => { if (seen[n] === 999) seen[n] = idx; }));
+  return seen;
+}
+function rangeBuckets() {
+  const b = [0, 0, 0, 0, 0]; // 01-07, 08-14, 15-21, 22-28, 29-35
+  draws.forEach(d => d.nums.forEach(n => b[Math.min(4, Math.floor((n - 1) / 7))]++));
+  return b;
+}
+function oddEven() {
+  let odd = 0, even = 0;
+  draws.forEach(d => d.nums.forEach(n => (n % 2 ? odd++ : even++)));
+  return { odd, even };
+}
+
+function drawCanvas(id, labels, values, color = '#2f9cff', kind = 'bar') {
+  const c = $(id);
+  if (!c || !c.offsetParent) return;
+  const w = c.clientWidth || 500, h = c.clientHeight || 220, dpr = window.devicePixelRatio || 1;
+  c.width = w * dpr; c.height = h * dpr;
+  const x = c.getContext('2d');
+  x.scale(dpr, dpr);
+  x.clearRect(0, 0, w, h);
+  const pad = { l: 28, r: 8, t: 12, b: 28 }, cw = w - pad.l - pad.r, ch = h - pad.t - pad.b;
+  const max = Math.max(1, ...values), n = values.length;
+  x.font = '11px system-ui'; x.strokeStyle = '#173654'; x.fillStyle = '#91aac9'; x.lineWidth = 1;
+  for (let j = 0; j <= 4; j++) {
+    const y = pad.t + ch * j / 4;
+    x.beginPath(); x.moveTo(pad.l, y); x.lineTo(w - pad.r, y); x.stroke();
+    x.fillText(Math.round(max * (1 - j / 4)), 3, y + 4);
+  }
+  if (kind === 'line') {
+    x.beginPath();
+    values.forEach((v, i) => {
+      const xx = pad.l + (i / Math.max(1, n - 1)) * cw;
+      const yy = pad.t + ch - (v / max) * ch;
+      i ? x.lineTo(xx, yy) : x.moveTo(xx, yy);
+    });
+    x.strokeStyle = color; x.lineWidth = 2; x.stroke();
+    values.forEach((v, i) => {
+      const xx = pad.l + (i / Math.max(1, n - 1)) * cw;
+      const yy = pad.t + ch - (v / max) * ch;
+      x.fillStyle = color; x.beginPath(); x.arc(xx, yy, 2.5, 0, Math.PI * 2); x.fill();
+    });
+  } else {
+    const slot = cw / n, bw = Math.max(2, slot * 0.65);
+    values.forEach((v, i) => {
+      const bh = v / max * (ch - 4);
+      const xx = pad.l + i * slot + (slot - bw) / 2;
+      const yy = pad.t + ch - bh;
+      x.fillStyle = color; x.fillRect(xx, yy, bw, bh);
+      if (n <= 40) {
+        x.fillStyle = '#d7eaff'; x.textAlign = 'center';
+        x.fillText(labels[i], xx + bw / 2, h - 8); x.textAlign = 'left';
+      }
+    });
+  }
+}
+
+function ballHTML(n, idx = -1, special = false) {
+  let cls = 'ball';
+  if (special) cls += ' special';
+  else if (idx === 0) cls += ' blue';
+  else if (idx === 3) cls += ' green';
+  else if (idx === 4) cls += ' purple';
+  return `<span class="${cls}">${String(n).padStart(2, '0')}</span>`;
+}
+function balls(nums, special) {
+  let html = nums.map((n, i) => ballHTML(n, i)).join('');
+  if (special != null) {
+    html += `<span class="muted" style="margin:0 6px">|</span>` + ballHTML(special, -1, true) +
+      `<span class="muted small" style="margin-left:4px">ĐB</span>`;
+  }
+  return html;
+}
+function freqRow(n, v, max, colorBar) {
+  const pct = Math.max(2, v / Math.max(1, max) * 100);
+  const barStyle = colorBar ? `background:linear-gradient(90deg,#7859d8,#ba9aff)` : '';
+  return `<div class="freq-row"><span class="mini-ball">${String(n).padStart(2,'0')}</span><span class="bar"><i style="width:${pct}%;${barStyle}"></i></span><b>${v}</b></div>`;
+}
+
+function render() {
+  if (!draws.length) {
+    draws = sampleData();
+    sampleMode = true;
+  }
+
+  $('dataBadge').textContent = sampleMode ? 'DỮ LIỆU MẪU' : 'DỮ LIỆU THỰC';
+  $('dataBadge').className = 'pill ' + (sampleMode ? 'warn' : 'ok');
+  $('drawCount').textContent = `${draws.length} kỳ · ${sampleMode ? 'dữ liệu mẫu' : 'đã đồng bộ'}`;
+  $('totalDraws').textContent = draws.length;
+  const f = freqMap();
+  const uniq = f.filter(x => x > 0).length;
+  $('uniqueNums').textContent = uniq;
+  $('totalHits').textContent = draws.length * 5;
+  $('dataStatus').textContent = sampleMode
+    ? 'Đang dùng dữ liệu mẫu ngẫu nhiên. Bấm “Cập nhật kết quả thật” để lấy dữ liệu từ nguồn mở.'
+    : 'Dữ liệu lấy từ vietvudanh/vietlott-data (GitHub) và lưu trong SQLite.';
+
+  const latest = draws[0];
+  $('latestMeta').textContent = `Kỳ #${latest.id} · ${latest.date}` + (sampleMode ? ' · Dữ liệu mẫu' : ' · Nguồn mở');
+  $('latestBalls').innerHTML = balls(latest.nums, latest.special);
+
+  // Hot / Cold with nice bars
+  const ranked = [...Array(35)].map((_, i) => ({ n: i + 1, c: f[i + 1] })).sort((a, b) => b.c - a.c);
+  const maxC = Math.max(...f.slice(1), 1);
+  $('hotList').innerHTML = ranked.slice(0, 8).map(x => freqRow(x.n, x.c, maxC)).join('');
+  const gaps = lastSeen();
+  const maxG = Math.max(...gaps.slice(1).filter(g => g < 999), 1);
+  const cold = [...Array(35)].map((_, i) => ({ n: i + 1, g: gaps[i + 1] })).sort((a, b) => b.g - a.g);
+  $('coldList').innerHTML = cold.slice(0, 8).map(x =>
+    freqRow(x.n, x.g === 999 ? maxG : x.g, maxG, true)
+  ).join('');
+
+  // Special freq
+  const sf = specialFreqMap();
+  const maxS = Math.max(...sf.slice(1), 1);
+  $('specialFreq').innerHTML = [...Array(12)].map((_, i) => {
+    const n = i + 1;
+    return freqRow(n, sf[n], maxS);
+  }).join('');
+
+  // Charts
+  drawCanvas('freqChart', Array.from({ length: 35 }, (_, i) => i + 1), f.slice(1), '#2f9cff');
+  const rb = rangeBuckets();
+  const groupNames = ['01–07', '08–14', '15–21', '22–28', '29–35'];
+  drawCanvas('rangeChart', groupNames, rb, '#20d6a1');
+  const oe = oddEven();
+  const hits = draws.length * 5;
+  drawCanvas('oddChart', ['Lẻ', 'Chẵn'], [oe.odd, oe.even], '#ff426f');
+  $('oddText').textContent = `Lẻ ${oe.odd} (${(oe.odd / hits * 100).toFixed(1)}%) · Chẵn ${oe.even} (${(oe.even / hits * 100).toFixed(1)}%)`;
+
+  // Recent table
+  $('recentRows').innerHTML = draws.slice(0, 10).map(d =>
+    `<tr><td>#${d.id}</td><td>${d.date}</td><td class="nums">${d.nums.map(n => String(n).padStart(2,'0')).join(' ')}</td><td><b style="color:var(--special)">${String(d.special).padStart(2,'0')}</b></td></tr>`
+  ).join('');
+
+  // Full history
+  $('allRows').innerHTML = draws.map(d => {
+    const sum = d.nums.reduce((a, b) => a + b, 0);
+    const even = d.nums.filter(n => n % 2 === 0).length;
+    return `<tr>
+      <td>#${d.id}</td><td>${d.date}</td>
+      <td class="nums">${d.nums.map(n => String(n).padStart(2,'0')).join(' ')}</td>
+      <td><b style="color:var(--special)">${String(d.special).padStart(2,'0')}</b></td>
+      <td>${sum}</td><td>${even}</td><td>${5 - even}</td>
+    </tr>`;
+  }).join('');
+
+  // Trend charts
+  drawCanvas('trendFreq', Array.from({ length: 35 }, (_, i) => i + 1), f.slice(1), '#42d7f5');
+  drawCanvas('trendRange', groupNames, rb, '#20d6a1');
+  $('rangeSummary').textContent = groupNames.map((g, i) => `${g}: ${rb[i]} lượt`).join(' · ');
+  drawCanvas('specialChart', Array.from({ length: 12 }, (_, i) => i + 1), sf.slice(1), '#ff7b54');
+
+  // Sum line chart (30 kỳ gần nhất)
+  const sums = draws.slice(0, 30).reverse().map(d => d.nums.reduce((a, b) => a + b, 0));
+  drawCanvas('sumChart', sums.map((_, i) => i + 1), sums, '#ffbd4a', 'line');
+
+  // Gap heatmap
+  $('gapMap').innerHTML = Array.from({ length: 35 }, (_, i) => i + 1).map(n => {
+    const g = gaps[n];
+    const intensity = Math.min(0.8, 0.08 + (g === 999 ? 1 : g / Math.max(1, maxG)) * 0.7);
+    return `<div class="heat" title="Số ${n}: ${g === 999 ? 'chưa' : g + ' kỳ'}" style="background:rgba(47,156,255,${intensity})">${String(n).padStart(2,'0')}<small style="font-size:9px;opacity:.8">${g === 999 ? '—' : g + 'k'}</small></div>`;
+  }).join('');
+
+  makeSuggestions();
+}
+
+/* ========== Thuật toán gợi ý tối ưu (multi-factor scoring) ========== */
+function buildPairMatrix() {
+  const pair = Array.from({ length: 36 }, () => Array(36).fill(0));
+  draws.forEach(d => {
+    for (let i = 0; i < d.nums.length; i++)
+      for (let j = i + 1; j < d.nums.length; j++) {
+        pair[d.nums[i]][d.nums[j]]++;
+        pair[d.nums[j]][d.nums[i]]++;
+      }
+  });
+  return pair;
+}
+
+function scoreCombo(nums, f, gaps, pair, avgSum, avgFreq) {
+  // 1. Frequency score (prefer near-average or slightly above)
+  let freqScore = 0;
+  nums.forEach(n => {
+    const ratio = f[n] / Math.max(0.5, avgFreq);
+    // peak around 0.85–1.3 of average
+    freqScore += Math.max(0, 1 - Math.abs(ratio - 1.05) * 1.4);
+  });
+  freqScore = (freqScore / 5) * 25;
+
+  // 2. Overdue / gap score (reward numbers that haven't appeared recently, but not extreme)
+  let gapScore = 0;
+  const maxGap = Math.max(...gaps.slice(1).filter(g => g < 999), 1);
+  nums.forEach(n => {
+    const g = gaps[n] === 999 ? maxGap : gaps[n];
+    const norm = Math.min(1, g / (maxGap * 0.7));
+    gapScore += Math.pow(norm, 0.7); // mild preference for overdue
+  });
+  gapScore = (gapScore / 5) * 25;
+
+  // 3. Pair synergy
+  let pairScore = 0, pairCount = 0;
+  for (let i = 0; i < 5; i++)
+    for (let j = i + 1; j < 5; j++) {
+      pairScore += pair[nums[i]][nums[j]];
+      pairCount++;
+    }
+  const maxPair = Math.max(...pair.flat(), 1);
+  pairScore = (pairScore / (pairCount * maxPair)) * 20;
+
+  // 4. Balance (odd/even + range spread)
+  const odd = nums.filter(n => n % 2).length;
+  const even = 5 - odd;
+  const oddEvenBal = 1 - Math.abs(odd - even) / 5; // best when 2-3 or 3-2
+  const buckets = [0, 0, 0, 0, 0];
+  nums.forEach(n => buckets[Math.min(4, Math.floor((n - 1) / 7))]++);
+  const spread = buckets.filter(b => b > 0).length / 5;
+  const balanceScore = ((oddEvenBal + spread) / 2) * 15;
+
+  // 5. Sum closeness to historical average
+  const sum = nums.reduce((a, b) => a + b, 0);
+  const sumDev = Math.abs(sum - avgSum) / Math.max(20, avgSum * 0.25);
+  const sumScore = Math.max(0, 1 - sumDev) * 15;
+
+  const total = freqScore + gapScore + pairScore + balanceScore + sumScore;
+  return {
+    total: Math.round(total * 10) / 10,
+    parts: {
+      freq: Math.round(freqScore * 10) / 10,
+      gap: Math.round(gapScore * 10) / 10,
+      pair: Math.round(pairScore * 10) / 10,
+      balance: Math.round(balanceScore * 10) / 10,
+      sum: Math.round(sumScore * 10) / 10
+    }
+  };
+}
+
+function generateCandidate(f, gaps, pair, strategy) {
+  const numbers = Array.from({ length: 35 }, (_, i) => i + 1);
+  const avgFreq = f.slice(1).reduce((a, b) => a + b, 0) / 35;
+  const maxGap = Math.max(...gaps.slice(1).filter(g => g < 999), 1);
+
+  function weight(n) {
+    let w = 1;
+    if (strategy === 'balanced' || strategy === 'optimized') {
+      const ratio = f[n] / Math.max(0.5, avgFreq);
+      w += Math.max(0, 1.2 - Math.abs(ratio - 1.05)) * 2;
+      const g = gaps[n] === 999 ? maxGap : gaps[n];
+      w += Math.min(2.5, (g / maxGap) * 2.2);
+    } else if (strategy === 'hot') {
+      w += (f[n] / Math.max(1, ...f.slice(1))) * 4;
+    } else if (strategy === 'overdue') {
+      const g = gaps[n] === 999 ? maxGap : gaps[n];
+      w += (g / maxGap) * 5;
+    } else if (strategy === 'pair') {
+      // prefer numbers that pair well with already chosen — handled later
+      w += (f[n] / Math.max(1, ...f.slice(1))) * 1.5;
+    }
+    return Math.max(0.05, w);
+  }
+
+  const pool = [...numbers];
+  const chosen = [];
+  while (chosen.length < 5 && pool.length) {
+    let wArr;
+    if (strategy === 'pair' && chosen.length > 0) {
+      wArr = pool.map(n => {
+        let s = weight(n);
+        chosen.forEach(c => { s += pair[n][c] * 0.8; });
+        return s;
+      });
+    } else {
+      wArr = pool.map(weight);
+    }
+    const total = wArr.reduce((a, b) => a + b, 0);
+    let r = Math.random() * total;
+    let idx = 0;
+    for (; idx < pool.length - 1; idx++) {
+      r -= wArr[idx];
+      if (r <= 0) break;
+    }
+    chosen.push(pool.splice(idx, 1)[0]);
+  }
+  return chosen.sort((a, b) => a - b);
+}
+
+function makeSuggestions(append = false) {
+  if (!draws.length) return;
+  const f = freqMap();
+  const gaps = lastSeen();
+  const pair = buildPairMatrix();
+  const sums = draws.map(d => d.nums.reduce((a, b) => a + b, 0));
+  const avgSum = sums.reduce((a, b) => a + b, 0) / sums.length;
+  const avgFreq = f.slice(1).reduce((a, b) => a + b, 0) / 35;
+
+  const strategies = ['optimized', 'optimized', 'balanced', 'hot', 'overdue', 'pair'];
+  const labels = {
+    optimized: 'Tối ưu đa yếu tố',
+    balanced: 'Cân bằng thống kê',
+    hot: 'Ưu tiên số nóng',
+    overdue: 'Ưu tiên số lâu chưa về',
+    pair: 'Ưu tiên cặp đồng hành'
+  };
+
+  // Generate many candidates, score, keep top unique
+  const candidates = [];
+  const seen = new Set();
+  for (let i = 0; i < 80; i++) {
+    const strat = strategies[i % strategies.length];
+    const nums = generateCandidate(f, gaps, pair, strat);
+    const key = nums.join(',');
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const sc = scoreCombo(nums, f, gaps, pair, avgSum, avgFreq);
+    candidates.push({ nums, score: sc.total, parts: sc.parts, label: labels[strat] });
+  }
+  candidates.sort((a, b) => b.score - a.score);
+
+  const top = candidates.slice(0, append ? 10 : 5);
+
+  const html = top.map((s, i) => {
+    const barW = Math.min(100, Math.round(s.score));
+    return `<div class="suggestion">
+      <div class="row space">
+        <b>Dãy ${i + 1}</b>
+        <span class="muted small">${s.label} · Điểm ${s.score}/100</span>
+      </div>
+      <div class="balls" style="margin-top:8px">${s.nums.map((n, idx) => ballHTML(n, idx)).join('')}</div>
+      <div style="margin-top:8px">
+        <div class="bar" style="height:6px"><i style="width:${barW}%;background:linear-gradient(90deg,#0878e9,#42d7f5)"></i></div>
+        <div class="muted small" style="margin-top:4px">
+          Tần suất ${s.parts.freq} · Overdue ${s.parts.gap} · Cặp ${s.parts.pair} · Cân bằng ${s.parts.balance} · Tổng ${s.parts.sum}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  $('suggestions').innerHTML = html;
+  if (append && $('predictList').innerHTML) {
+    $('predictList').innerHTML += html;
+  } else {
+    $('predictList').innerHTML = html;
+  }
+}
+
+/* ---------- CSV ---------- */
+function importCSV() {
+  const text = $('csvInput').value.trim();
+  if (!text) return;
+  const lines = text.split(/\r?\n/).filter(Boolean);
+  const parsed = [];
+  for (const line of lines) {
+    const parts = line.split(/[,;\t]/).map(x => x.trim());
+    if (parts.length < 6) continue;
+    const id = parts[0].replace(/^#/, '');
+    const date = parts[1];
+    let nums, special;
+    if (parts.length >= 8) {
+      nums = parts.slice(2, 7).map(Number);
+      special = Number(parts[7]);
+    } else {
+      nums = parts.slice(2, 7).map(Number);
+      special = 1;
+    }
+    if (nums.length === 5 && nums.every(n => n >= 1 && n <= 35) && new Set(nums).size === 5) {
+      parsed.push({ id, date, nums: nums.sort((a, b) => a - b), special: special >= 1 && special <= 12 ? special : 1 });
+    }
+  }
+  if (!parsed.length) {
+    $('importMsg').textContent = 'Không tìm thấy dòng hợp lệ.';
+    return;
+  }
+  draws = parsed.slice(0, 100);
+  sampleMode = false;
+  $('importMsg').textContent = `Đã nạp ${draws.length} kỳ hợp lệ.`;
+  render();
+  go('overview');
+}
+function loadFile(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => { $('csvInput').value = r.result; importCSV(); };
+  r.readAsText(f);
+}
+function downloadCSV() {
+  const header = 'ky,ngay,so1,so2,so3,so4,so5,special\n';
+  const body = draws.map(d => [d.id, d.date, ...d.nums, d.special].join(',')).join('\n');
+  downloadBlob(header + body, 'vietlott-5-35.csv');
+}
+function downloadTemplate() {
+  downloadBlob('ky,ngay,so1,so2,so3,so4,so5,special\n00946,2026-10-14,9,10,18,28,35,7\n', 'vietlott-5-35-template.csv');
+}
+function downloadBlob(data, name) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([data], { type: 'text/csv;charset=utf-8;' }));
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+/* ---------- Server ---------- */
+async function loadServerData() {
+  try {
+    const r = await fetch('/api/draws?limit=100');
+    if (!r.ok) throw new Error('API chưa sẵn sàng');
+    const data = await r.json();
+    if (data.draws && data.draws.length) {
+      draws = data.draws.map(d => ({
+        id: String(d.draw_id || ''),
+        date: d.draw_date || '',
+        nums: d.main_numbers,
+        special: d.special_number
+      }));
+      sampleMode = false;
+      render();
+      $('dataBadge').textContent = 'DỮ LIỆU THỰC';
+      $('dataBadge').className = 'pill ok';
+      $('latestMeta').textContent = `Kỳ #${draws[0].id} · ${draws[0].date} · Nguồn mở`;
+      $('drawCount').textContent = `${draws.length} kỳ đã đồng bộ`;
+      $('dataStatus').textContent = 'Dữ liệu lấy từ vietvudanh/vietlott-data (GitHub NDJSON) và lưu trong SQLite.';
+    }
+  } catch (e) {
+    $('drawCount').textContent = 'Chưa đồng bộ dữ liệu thật';
+  }
+}
+
+async function syncRealData() {
+  const btn = $('syncBtn');
+  btn.disabled = true;
+  btn.textContent = 'Đang cập nhật…';
+  try {
+    const r = await fetch('/api/sync', { method: 'POST' });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || 'Không cập nhật được');
+    await loadServerData();
+    alert(`Đồng bộ xong: ${data.saved} kỳ.\nNguồn: vietvudanh/vietlott-data`);
+  } catch (e) {
+    alert('Chưa thể đồng bộ: ' + e.message + '\nBạn vẫn có thể nhập CSV ở mục Nhập dữ liệu.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '⟳ Cập nhật kết quả thật';
+  }
+}
+
+
+async function fetchApi(endpoint, target) {
+  const el = $(target); el.innerHTML = '<p class="muted">Đang xử lý…</p>';
+  try { const r = await fetch(endpoint); const data = await r.json(); if (!r.ok) throw new Error(data.detail || 'API lỗi'); return data; }
+  catch (e) { el.innerHTML = `<p class="muted">Không tải được dữ liệu: ${escapeHtml(e.message)}</p>`; return null; }
+}
+function escapeHtml(v) { return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+async function loadAdvancedAnalytics() {
+  const d = await fetchApi('/api/analytics', 'analyticsOutput'); if (!d) return;
+  const freq = [...(d.main_frequency || [])].sort((a,b)=>b.count-a.count).slice(0,8);
+  const pairs = (d.top_pairs || []).slice(0,8);
+  const gaps = [...(d.gap_distribution || [])].sort((a,b)=>b.current_gap-a.current_gap).slice(0,8);
+  $('analyticsOutput').innerHTML = `<div class="stats"><div class="stat"><span>Số kỳ phân tích</span><b>${d.draw_count}</b></div><div class="stat"><span>Số chính mỗi kỳ</span><b>5 / 35</b></div></div><div class="card"><h3>🔥 Tần suất cao</h3>${freq.map(x=>`<div class="freq-row"><span class="mini-ball">${String(x.number).padStart(2,'0')}</span><span class="bar"><i style="width:${Math.max(3,x.count/Math.max(1,freq[0]?.count||1)*100)}%"></i></span><b>${x.count} lần</b></div>`).join('')}</div><div class="card"><h3>🔗 Cặp đồng xuất hiện nhiều</h3><div class="balls">${pairs.map(x=>`<span class="ball sm blue">${String(x.numbers[0]).padStart(2,'0')}</span><span class="ball sm green">${String(x.numbers[1]).padStart(2,'0')}</span><span class="muted small">×${x.count}</span>`).join(' ')||'Chưa có dữ liệu'}</div></div><div class="card"><h3>⏳ Khoảng cách hiện tại lớn</h3>${gaps.map(x=>`<span class="mini-ball">${String(x.number).padStart(2,'0')}</span> <b>${x.current_gap} kỳ</b>　`).join('')}<p class="muted small">Thống kê lịch sử không làm tăng xác suất xuất hiện ở kỳ tiếp theo.</p></div>`;
+}
+async function loadMLRecommendation() {
+  const d = await fetchApi('/api/model/recommend', 'mlOutput'); if (!d) return;
+  $('mlOutput').innerHTML = `<div class="card"><p class="muted">Dãy số tham khảo</p><div class="balls">${balls(d.suggested_main || [], d.suggested_special)}</div><p class="muted small" style="margin-top:12px">Mô hình: ${escapeHtml(d.model)} · Dữ liệu huấn luyện: ${d.training_draws ?? '—'}</p></div><div class="card" style="margin-top:12px"><h3>Top điểm mô hình</h3><div class="balls">${(d.main_numbers_ranked || []).slice(0,10).map((x,i)=>`<span class="ball sm ${['blue','','green','purple','gold'][i%5]}">${String(x.number).padStart(2,'0')}</span>`).join('')}</div><p class="muted small">${escapeHtml(d.warning || '')}</p></div>`;
+}
+async function runBacktest() {
+  const d = await fetchApi('/api/model/backtest?min_train=40&max_draws=12', 'backtestOutput'); if (!d) return;
+  $('backtestOutput').innerHTML = `<div class="stats"><div class="stat"><span>Kỳ được đánh giá</span><b>${d.evaluated_draws}</b></div><div class="stat"><span>ML · số trùng trung bình</span><b>${d.ml_mean_hits}</b></div><div class="stat"><span>Baseline tần suất</span><b>${d.frequency_baseline_mean_hits}</b></div><div class="stat"><span>Kỳ vọng ngẫu nhiên</span><b>${d.random_uniform_expected_hits}</b></div></div><p class="muted small">${escapeHtml(d.warning || '')}</p>`;
+}
+
+window.addEventListener('resize', () => render());
+render();
+loadServerData();
+</script>
+</body>
+</html>
